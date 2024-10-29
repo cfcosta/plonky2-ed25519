@@ -134,6 +134,20 @@ impl Field for Ed25519Base {
     }
 
     #[inline]
+    fn from_noncanonical_u64(n: u64) -> Self {
+        Self([n, 0, 0, 0])
+    }
+
+    #[inline]
+    fn from_noncanonical_i64(n: i64) -> Self {
+        if n >= 0 {
+            Self::from_noncanonical_u64(n as u64)
+        } else {
+            -Self::from_noncanonical_u64((-n) as u64)
+        }
+    }
+
+    #[inline]
     fn from_noncanonical_u128(n: u128) -> Self {
         Self([n as u64, (n >> 64) as u64, 0, 0])
     }
