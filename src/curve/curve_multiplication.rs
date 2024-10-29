@@ -59,15 +59,15 @@ impl<C: Curve> ProjectivePoint<C> {
             all_summands.push(u_summands);
         }
 
-        let all_sums: Vec<ProjectivePoint<C>> = all_summands
+        let all_sums = all_summands
             .iter()
-            .cloned()
-            .map(|vec| vec.iter().fold(ProjectivePoint::ZERO, |a, &b| a + b))
-            .collect();
-        for i in 0..all_sums.len() {
-            u = u + all_sums[i];
+            .map(|vec| vec.iter().fold(ProjectivePoint::ZERO, |a, &b| a + b));
+
+        for sum in all_sums {
+            u = u + sum;
             y = y + u;
         }
+
         y
     }
 }

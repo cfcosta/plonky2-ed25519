@@ -89,7 +89,7 @@ pub trait CircuitBuilderCurve<F: RichField + Extendable<D>, const D: usize> {
 
     fn point_compress<C: Curve>(&mut self, p: &AffinePointTarget<C>) -> Vec<BoolTarget>;
 
-    fn point_decompress<C: Curve>(&mut self, p: &Vec<BoolTarget>) -> AffinePointTarget<C>;
+    fn point_decompress<C: Curve>(&mut self, p: &[BoolTarget]) -> AffinePointTarget<C>;
 }
 
 impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderCurve<F, D>
@@ -313,12 +313,12 @@ impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderCurve<F, D>
         bits
     }
 
-    fn point_decompress<C: Curve>(&mut self, pv: &Vec<BoolTarget>) -> AffinePointTarget<C> {
+    fn point_decompress<C: Curve>(&mut self, pv: &[BoolTarget]) -> AffinePointTarget<C> {
         assert_eq!(pv.len(), 256);
         let p = self.add_virtual_affine_point_target();
 
         self.add_simple_generator(CurvePointDecompressionGenerator::<F, D, C> {
-            pv: pv.clone(),
+            pv: pv.to_vec(),
             p: p.clone(),
             _phantom: PhantomData,
         });

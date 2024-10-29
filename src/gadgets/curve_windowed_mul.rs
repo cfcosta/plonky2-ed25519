@@ -65,12 +65,15 @@ impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderWindowedMul<F, 
         };
 
         let mut multiples = vec![self.constant_affine_point(g)];
+
         for i in 1..1 << WINDOW_SIZE {
             multiples.push(self.curve_add(p, &multiples[i - 1]));
         }
-        for i in 1..1 << WINDOW_SIZE {
-            multiples[i] = self.curve_add(&neg, &multiples[i]);
+
+        for m in multiples.iter_mut().take(1 << WINDOW_SIZE).skip(1) {
+            *m = self.curve_add(&neg, m);
         }
+
         multiples
     }
 
