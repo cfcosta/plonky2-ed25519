@@ -328,7 +328,7 @@ struct CurvePointDecompressionGenerator<F: RichField + Extendable<D>, const D: u
     _phantom: PhantomData<F>,
 }
 
-impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F>
+impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F, D>
     for CurvePointDecompressionGenerator<F, D, C>
 {
     fn dependencies(&self) -> Vec<Target> {
