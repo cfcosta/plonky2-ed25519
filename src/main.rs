@@ -24,7 +24,7 @@ use plonky2_ed25519::curve::eddsa::{
     SAMPLE_MSG1, SAMPLE_MSG2, SAMPLE_PK1, SAMPLE_SIG1, SAMPLE_SIG2,
 };
 use plonky2_ed25519::gadgets::eddsa::{fill_circuits, make_verify_circuits};
-use plonky2::extension::Extendable;
+use plonky2::field::extension::Extendable;
 use plonky2::goldilocks_field::GoldilocksField;
 use std::fs::File;
 use std::io::Write;

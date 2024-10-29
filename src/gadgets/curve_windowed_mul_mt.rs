@@ -12,8 +12,8 @@ use plonky2::plonk::config::{AlgebraicHasher, GenericConfig, Hasher};
 use plonky2::plonk::proof::{ProofWithPublicInputs, ProofWithPublicInputsTarget};
 use plonky2::util::timing::TimingTree;
 use plonky2_ecdsa::gadgets::biguint::WitnessBigUint;
-use plonky2::extension::Extendable;
-use plonky2::types::{Field, PrimeField};
+use plonky2::field::extension::Extendable;
+use plonky2::field::types::{Field, PrimeField};
 use plonky2_u32::gadgets::arithmetic_u32::CircuitBuilderU32;
 
 use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
@@ -386,7 +386,7 @@ mod tests {
     use log::LevelFilter;
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
-    use plonky2::types::{Field, Sample};
+    use plonky2::field::types::{Field, Sample};
 
     use crate::curve::curve_types::{Curve, CurveScalar};
     use crate::curve::ed25519::Ed25519;

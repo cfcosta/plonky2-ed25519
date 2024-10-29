@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 
 use num::{BigUint, Integer, One, Zero};
+use plonky2::field::types::PrimeField;
 use plonky2::hash::hash_types::RichField;
 use plonky2::iop::generator::{GeneratedValues, SimpleGenerator};
 use plonky2::iop::target::{BoolTarget, Target};
 use plonky2::iop::witness::{PartitionWitness, WitnessWrite};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
-use plonky2::types::PrimeField;
-use plonky2::{extension::Extendable, types::Field};
+use plonky2::{field::extension::Extendable, field::types::Field};
 use plonky2_u32::gadgets::arithmetic_u32::{CircuitBuilderU32, U32Target};
 use plonky2_u32::gadgets::range_check::range_check_u32_circuit;
 use plonky2_u32::witness::GeneratedValuesU32;
@@ -482,6 +482,28 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
         out_buffer.set_biguint_target(&self.sum.value, &sum_reduced);
         out_buffer.set_bool_target(self.overflow, overflow);
     }
+
+    fn id(&self) -> String {
+        "NonNativeAdditionGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(
+        _src: &mut plonky2::util::serialization::Buffer,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[derive(Debug)]
@@ -527,6 +549,28 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
         out_buffer.set_biguint_target(&self.sum.value, &sum_reduced);
         out_buffer.set_u32_target(self.overflow, overflow);
     }
+
+    fn id(&self) -> String {
+        "NonNativeMultipleAddsGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(
+        _src: &mut plonky2::util::serialization::Buffer,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[derive(Debug)]
@@ -568,6 +612,28 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
         out_buffer.set_biguint_target(&self.diff.value, &diff_biguint);
         out_buffer.set_bool_target(self.overflow, overflow);
     }
+
+    fn id(&self) -> String {
+        "NonNativeSubtractionGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(
+        _src: &mut plonky2::util::serialization::Buffer,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[derive(Debug)]
@@ -607,6 +673,28 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
         out_buffer.set_biguint_target(&self.prod.value, &prod_reduced);
         out_buffer.set_biguint_target(&self.overflow, &overflow_biguint);
     }
+
+    fn id(&self) -> String {
+        "NonNativeMultiplicationGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(
+        _src: &mut plonky2::util::serialization::Buffer,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[derive(Debug)]
@@ -637,16 +725,38 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
         out_buffer.set_biguint_target(&self.div, &div);
         out_buffer.set_biguint_target(&self.inv, &inv_biguint);
     }
+
+    fn id(&self) -> String {
+        "NonNativeInverseGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(
+        _src: &mut plonky2::util::serialization::Buffer,
+        _common_data: &plonky2::plonk::circuit_data::CommonCircuitData<F, D>,
+    ) -> plonky2::util::serialization::IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+    use plonky2::field::types::{Field, PrimeField, Sample};
     use plonky2::iop::witness::PartialWitness;
     use plonky2::plonk::circuit_builder::CircuitBuilder;
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
-    use plonky2::types::{Field, PrimeField, Sample};
 
     use crate::field::ed25519_base::Ed25519Base;
     use crate::gadgets::nonnative::CircuitBuilderNonNative;
@@ -681,7 +791,7 @@ mod tests {
     #[test]
     fn test_nonnative_many_adds() -> Result<()> {
         type FF = Ed25519Base;
-        const D: usize = 2;
+        const D: usize = 3;
         type C = PoseidonGoldilocksConfig;
         type F = <C as GenericConfig<D>>::F;
 

@@ -1,13 +1,15 @@
 use std::marker::PhantomData;
 
+use plonky2::field::extension::Extendable;
+use plonky2::field::types::{Field, PrimeField, Sample};
 use plonky2::hash::hash_types::RichField;
 use plonky2::iop::generator::{GeneratedValues, SimpleGenerator};
 use plonky2::iop::target::{BoolTarget, Target};
 use plonky2::iop::witness::{PartitionWitness, Witness};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
+use plonky2::plonk::circuit_data::CommonCircuitData;
+use plonky2::util::serialization::{Buffer, IoResult};
 use plonky2_ecdsa::gadgets::biguint::GeneratedValuesBigUint;
-use plonky2::extension::Extendable;
-use plonky2::types::{Field, PrimeField, Sample};
 use plonky2_sha512::circuit::biguint_to_bits_target;
 
 use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
@@ -353,6 +355,25 @@ impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F, 
         out_buffer.set_biguint_target(&self.p.x.value, &point.x.to_canonical_biguint());
         out_buffer.set_biguint_target(&self.p.y.value, &point.y.to_canonical_biguint());
     }
+
+    fn id(&self) -> String {
+        "CurvePointDecompressionGenerator".to_string()
+    }
+
+    fn serialize(
+        &self,
+        _dst: &mut Vec<u8>,
+        _common_data: &CommonCircuitData<F, D>,
+    ) -> IoResult<()> {
+        todo!()
+    }
+
+    fn deserialize(_src: &mut Buffer, _common_data: &CommonCircuitData<F, D>) -> IoResult<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
 }
 
 #[cfg(test)]
@@ -360,11 +381,11 @@ mod tests {
     use std::ops::Neg;
 
     use anyhow::Result;
+    use plonky2::field::types::{Field, Sample};
     use plonky2::iop::witness::PartialWitness;
     use plonky2::plonk::circuit_builder::CircuitBuilder;
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
-    use plonky2::types::{Field, Sample};
 
     use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
     use crate::curve::ed25519::Ed25519;

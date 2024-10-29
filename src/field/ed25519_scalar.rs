@@ -9,7 +9,7 @@ use num::bigint::BigUint;
 use num::{Integer, One};
 use serde::{Deserialize, Serialize};
 
-use plonky2::types::{Field, PrimeField, Sample};
+use plonky2::field::types::{Field, PrimeField, Sample};
 
 /// The order of the Ed25519 elliptic curve is
 /// ```ignore
