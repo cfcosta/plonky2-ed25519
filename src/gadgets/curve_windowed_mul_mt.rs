@@ -1,6 +1,8 @@
 use anyhow::Result;
 use log::Level;
 use num::{BigUint, One};
+use plonky2::field::extension::Extendable;
+use plonky2::field::types::{Field, PrimeField};
 use plonky2::hash::hash_types::RichField;
 use plonky2::iop::target::Target;
 use plonky2::iop::witness::{PartialWitness, WitnessWrite};
@@ -12,8 +14,6 @@ use plonky2::plonk::config::{AlgebraicHasher, GenericConfig, Hasher};
 use plonky2::plonk::proof::{ProofWithPublicInputs, ProofWithPublicInputsTarget};
 use plonky2::util::timing::TimingTree;
 use plonky2_ecdsa::gadgets::biguint::WitnessBigUint;
-use plonky2::field::extension::Extendable;
-use plonky2::field::types::{Field, PrimeField};
 use plonky2_u32::gadgets::arithmetic_u32::CircuitBuilderU32;
 
 use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
@@ -232,8 +232,8 @@ where
     let circuit_data =
         get_curve_scalar_mul_windowed_part_circuit_data::<F, CV, C, D>(config.clone())?;
 
-    let proof0 = builder.add_virtual_proof_with_pis::<C>(&circuit_data.common);
-    let proof1 = builder.add_virtual_proof_with_pis::<C>(&circuit_data.common);
+    let proof0 = builder.add_virtual_proof_with_pis(&circuit_data.common);
+    let proof1 = builder.add_virtual_proof_with_pis(&circuit_data.common);
     let p_target = builder.add_virtual_affine_point_target();
     let n_target = builder.add_virtual_nonnative_target();
     let q_target = builder.add_virtual_affine_point_target();
@@ -384,9 +384,9 @@ mod tests {
 
     use anyhow::Result;
     use log::LevelFilter;
+    use plonky2::field::types::{Field, Sample};
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
-    use plonky2::field::types::{Field, Sample};
 
     use crate::curve::curve_types::{Curve, CurveScalar};
     use crate::curve::ed25519::Ed25519;
