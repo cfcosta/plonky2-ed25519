@@ -9,8 +9,8 @@ use plonky2::iop::witness::{PartitionWitness, Witness};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
 use plonky2::plonk::circuit_data::CommonCircuitData;
 use plonky2::util::serialization::{Buffer, IoResult};
-use plonky2_ecdsa::gadgets::biguint::GeneratedValuesBigUint;
-use plonky2_sha512::circuit::biguint_to_bits_target;
+use plonky2_ecdsa::gadgets::biguint::{BigUintTarget, GeneratedValuesBigUint};
+use plonky2_u32::gadgets::arithmetic_u32::U32Target;
 
 use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
 use crate::curve::eddsa::point_decompress;
@@ -374,6 +374,23 @@ impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F, 
     {
         todo!()
     }
+}
+
+fn bits_to_biguint_target<F: RichField + Extendable<D>, const D: usize>(
+    builder: &mut CircuitBuilder<F, D>,
+    bits_target: Vec<BoolTarget>,
+) -> BigUintTarget {
+    let bit_len = bits_target.len();
+    assert_eq!(bit_len % 32, 0);
+
+    let mut u32_targets = Vec::new();
+    for i in 0..bit_len / 32 {
+        u32_targets.push(U32Target(
+            builder.le_sum(bits_target[i * 32..(i + 1) * 32].iter().rev()),
+        ));
+    }
+    u32_targets.reverse();
+    BigUintTarget { limbs: u32_targets }
 }
 
 #[cfg(test)]
