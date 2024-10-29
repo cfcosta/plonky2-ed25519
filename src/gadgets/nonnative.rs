@@ -1,21 +1,33 @@
 use std::marker::PhantomData;
 
 use num::{BigUint, Integer, One, Zero};
-use plonky2::field::types::PrimeField;
-use plonky2::hash::hash_types::RichField;
-use plonky2::iop::generator::{GeneratedValues, SimpleGenerator};
-use plonky2::iop::target::{BoolTarget, Target};
-use plonky2::iop::witness::{PartitionWitness, WitnessWrite};
-use plonky2::plonk::circuit_builder::CircuitBuilder;
-use plonky2::{field::extension::Extendable, field::types::Field};
-use plonky2_u32::gadgets::arithmetic_u32::{CircuitBuilderU32, U32Target};
-use plonky2_u32::gadgets::range_check::range_check_u32_circuit;
-use plonky2_u32::witness::GeneratedValuesU32;
-use plonky2_util::ceil_div_usize;
-
-use plonky2_ecdsa::gadgets::biguint::{
-    BigUintTarget, CircuitBuilderBiguint, GeneratedValuesBigUint, WitnessBigUint,
+use plonky2::{
+    field::{
+        extension::Extendable,
+        types::{Field, PrimeField},
+    },
+    hash::hash_types::RichField,
+    iop::{
+        generator::{GeneratedValues, SimpleGenerator},
+        target::{BoolTarget, Target},
+        witness::{PartitionWitness, WitnessWrite},
+    },
+    plonk::circuit_builder::CircuitBuilder,
 };
+use plonky2_ecdsa::gadgets::biguint::{
+    BigUintTarget,
+    CircuitBuilderBiguint,
+    GeneratedValuesBigUint,
+    WitnessBigUint,
+};
+use plonky2_u32::{
+    gadgets::{
+        arithmetic_u32::{CircuitBuilderU32, U32Target},
+        range_check::range_check_u32_circuit,
+    },
+    witness::GeneratedValuesU32,
+};
+use plonky2_util::ceil_div_usize;
 
 #[derive(Clone, Debug)]
 pub struct NonNativeTarget<FF: Field> {
@@ -30,21 +42,15 @@ pub trait CircuitBuilderNonNative<F: RichField + Extendable<D>, const D: usize> 
 
     fn biguint_to_nonnative<FF: Field>(&mut self, x: &BigUintTarget) -> NonNativeTarget<FF>;
 
-    fn nonnative_to_canonical_biguint<FF: Field>(
-        &mut self,
-        x: &NonNativeTarget<FF>,
-    ) -> BigUintTarget;
+    fn nonnative_to_canonical_biguint<FF: Field>(&mut self, x: &NonNativeTarget<FF>)
+        -> BigUintTarget;
 
     fn constant_nonnative<FF: PrimeField>(&mut self, x: FF) -> NonNativeTarget<FF>;
 
     fn zero_nonnative<FF: PrimeField>(&mut self) -> NonNativeTarget<FF>;
 
     // Assert that two NonNativeTarget's, both assumed to be in reduced form, are equal.
-    fn connect_nonnative<FF: Field>(
-        &mut self,
-        lhs: &NonNativeTarget<FF>,
-        rhs: &NonNativeTarget<FF>,
-    );
+    fn connect_nonnative<FF: Field>(&mut self, lhs: &NonNativeTarget<FF>, rhs: &NonNativeTarget<FF>);
 
     fn add_virtual_nonnative_target<FF: Field>(&mut self) -> NonNativeTarget<FF>;
 
@@ -147,11 +153,7 @@ impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderNonNative<F, D>
     }
 
     // Assert that two NonNativeTarget's, both assumed to be in reduced form, are equal.
-    fn connect_nonnative<FF: Field>(
-        &mut self,
-        lhs: &NonNativeTarget<FF>,
-        rhs: &NonNativeTarget<FF>,
-    ) {
+    fn connect_nonnative<FF: Field>(&mut self, lhs: &NonNativeTarget<FF>, rhs: &NonNativeTarget<FF>) {
         self.connect_biguint(&lhs.value, &rhs.value);
     }
 
@@ -507,8 +509,7 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
 }
 
 #[derive(Debug)]
-struct NonNativeMultipleAddsGenerator<F: RichField + Extendable<D>, const D: usize, FF: PrimeField>
-{
+struct NonNativeMultipleAddsGenerator<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> {
     summands: Vec<NonNativeTarget<FF>>,
     sum: NonNativeTarget<FF>,
     overflow: U32Target,
@@ -752,14 +753,17 @@ impl<F: RichField + Extendable<D>, const D: usize, FF: PrimeField> SimpleGenerat
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-    use plonky2::field::types::{Field, PrimeField, Sample};
-    use plonky2::iop::witness::PartialWitness;
-    use plonky2::plonk::circuit_builder::CircuitBuilder;
-    use plonky2::plonk::circuit_data::CircuitConfig;
-    use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
+    use plonky2::{
+        field::types::{Field, PrimeField, Sample},
+        iop::witness::PartialWitness,
+        plonk::{
+            circuit_builder::CircuitBuilder,
+            circuit_data::CircuitConfig,
+            config::{GenericConfig, PoseidonGoldilocksConfig},
+        },
+    };
 
-    use crate::field::ed25519_base::Ed25519Base;
-    use crate::gadgets::nonnative::CircuitBuilderNonNative;
+    use crate::{field::ed25519_base::Ed25519Base, gadgets::nonnative::CircuitBuilderNonNative};
 
     #[test]
     fn test_nonnative_add() -> Result<()> {

@@ -1,28 +1,31 @@
 use std::marker::PhantomData;
 
 use num::BigUint;
-use plonky2::field::extension::Extendable;
-use plonky2::field::types::Field;
-use plonky2::hash::hash_types::RichField;
-use plonky2::hash::keccak::KeccakHash;
-use plonky2::iop::target::Target;
-use plonky2::plonk::circuit_builder::CircuitBuilder;
-use plonky2::plonk::config::{GenericHashOut, Hasher};
+use plonky2::{
+    field::{extension::Extendable, types::Field},
+    hash::{hash_types::RichField, keccak::KeccakHash},
+    iop::target::Target,
+    plonk::{
+        circuit_builder::CircuitBuilder,
+        config::{GenericHashOut, Hasher},
+    },
+};
 use plonky2_ecdsa::gadgets::biguint::BigUintTarget;
 use plonky2_u32::gadgets::arithmetic_u32::{CircuitBuilderU32, U32Target};
 
-use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
-use crate::gadgets::curve::{AffinePointTarget, CircuitBuilderCurve};
-use crate::gadgets::nonnative::NonNativeTarget;
-use crate::gadgets::split_nonnative::CircuitBuilderSplit;
+use crate::{
+    curve::curve_types::{AffinePoint, Curve, CurveScalar},
+    gadgets::{
+        curve::{AffinePointTarget, CircuitBuilderCurve},
+        nonnative::NonNativeTarget,
+        split_nonnative::CircuitBuilderSplit,
+    },
+};
 
 const WINDOW_SIZE: usize = 4;
 
 pub trait CircuitBuilderWindowedMul<F: RichField + Extendable<D>, const D: usize> {
-    fn precompute_window<C: Curve>(
-        &mut self,
-        p: &AffinePointTarget<C>,
-    ) -> Vec<AffinePointTarget<C>>;
+    fn precompute_window<C: Curve>(&mut self, p: &AffinePointTarget<C>) -> Vec<AffinePointTarget<C>>;
 
     fn random_access_curve_points<C: Curve>(
         &mut self,
@@ -49,10 +52,7 @@ pub trait CircuitBuilderWindowedMul<F: RichField + Extendable<D>, const D: usize
 impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderWindowedMul<F, D>
     for CircuitBuilder<F, D>
 {
-    fn precompute_window<C: Curve>(
-        &mut self,
-        p: &AffinePointTarget<C>,
-    ) -> Vec<AffinePointTarget<C>> {
+    fn precompute_window<C: Curve>(&mut self, p: &AffinePointTarget<C>) -> Vec<AffinePointTarget<C>> {
         let hash_0 = KeccakHash::<25>::hash_no_pad(&[F::ZERO]);
         let hash_0_scalar = C::ScalarField::from_noncanonical_biguint(BigUint::from_bytes_le(
             &GenericHashOut::<F>::to_bytes(&hash_0),
@@ -158,7 +158,7 @@ impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderWindowedMul<F, 
         };
 
         let mut result = self.constant_affine_point(starting_point.to_affine());
-        result = self.curve_add(&result, &q_init);
+        result = self.curve_add(&result, q_init);
 
         let precomputation = self.precompute_window(p);
         let zero = self.zero();
@@ -188,21 +188,31 @@ mod tests {
 
     use anyhow::Result;
     use log::{Level, LevelFilter};
-    use plonky2::field::types::{Field, Sample};
-    use plonky2::iop::witness::PartialWitness;
-    use plonky2::plonk::circuit_builder::CircuitBuilder;
-    use plonky2::plonk::circuit_data::CircuitConfig;
-    use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
-    use plonky2::util::timing::TimingTree;
+    use plonky2::{
+        field::types::{Field, Sample},
+        iop::witness::PartialWitness,
+        plonk::{
+            circuit_builder::CircuitBuilder,
+            circuit_data::CircuitConfig,
+            config::{GenericConfig, PoseidonGoldilocksConfig},
+        },
+        util::timing::TimingTree,
+    };
     use proptest::prelude::*;
     use test_strategy::proptest;
 
-    use crate::curve::curve_types::{Curve, CurveScalar};
-    use crate::curve::ed25519::Ed25519;
-    use crate::field::ed25519_scalar::Ed25519Scalar;
-    use crate::gadgets::curve::CircuitBuilderCurve;
-    use crate::gadgets::curve_windowed_mul::CircuitBuilderWindowedMul;
-    use crate::gadgets::nonnative::CircuitBuilderNonNative;
+    use crate::{
+        curve::{
+            curve_types::{Curve, CurveScalar},
+            ed25519::Ed25519,
+        },
+        field::ed25519_scalar::Ed25519Scalar,
+        gadgets::{
+            curve::CircuitBuilderCurve,
+            curve_windowed_mul::CircuitBuilderWindowedMul,
+            nonnative::CircuitBuilderNonNative,
+        },
+    };
 
     #[proptest]
     fn test_random_access_curve_points(

@@ -1,9 +1,9 @@
-use std::fmt::Debug;
-use std::hash::Hash;
-use std::ops::Neg;
+use std::{fmt::Debug, hash::Hash, ops::Neg};
 
-use plonky2::field::ops::Square;
-use plonky2::field::types::{Field, PrimeField};
+use plonky2::field::{
+    ops::Square,
+    types::{Field, PrimeField},
+};
 use serde::{Deserialize, Serialize};
 
 // To avoid implementation conflicts from associated types,
@@ -32,8 +32,7 @@ pub trait Curve: 'static + Sync + Sized + Copy + Debug {
 
     fn is_safe_curve() -> bool {
         // Added additional check to prevent using vulnerabilties in case a discriminant is equal to 0.
-        (Self::A.cube().double().double() + Self::D.square().triple().triple().triple())
-            .is_nonzero()
+        (Self::A.cube().double().double() + Self::D.square().triple().triple().triple()).is_nonzero()
     }
 }
 

@@ -1,19 +1,28 @@
 use std::marker::PhantomData;
 
-use plonky2::field::extension::Extendable;
-use plonky2::field::types::{Field, PrimeField, Sample};
-use plonky2::hash::hash_types::RichField;
-use plonky2::iop::generator::{GeneratedValues, SimpleGenerator};
-use plonky2::iop::target::{BoolTarget, Target};
-use plonky2::iop::witness::{PartitionWitness, Witness};
-use plonky2::plonk::circuit_builder::CircuitBuilder;
-use plonky2::plonk::circuit_data::CommonCircuitData;
-use plonky2::util::serialization::{Buffer, IoResult};
+use plonky2::{
+    field::{
+        extension::Extendable,
+        types::{Field, PrimeField, Sample},
+    },
+    hash::hash_types::RichField,
+    iop::{
+        generator::{GeneratedValues, SimpleGenerator},
+        target::{BoolTarget, Target},
+        witness::{PartitionWitness, Witness},
+    },
+    plonk::{circuit_builder::CircuitBuilder, circuit_data::CommonCircuitData},
+    util::serialization::{Buffer, IoResult},
+};
 use plonky2_ecdsa::gadgets::biguint::{BigUintTarget, GeneratedValuesBigUint};
 
-use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
-use crate::curve::eddsa::point_decompress;
-use crate::gadgets::nonnative::{CircuitBuilderNonNative, NonNativeTarget};
+use crate::{
+    curve::{
+        curve_types::{AffinePoint, Curve, CurveScalar},
+        eddsa::point_decompress,
+    },
+    gadgets::nonnative::{CircuitBuilderNonNative, NonNativeTarget},
+};
 
 /// A Target representing an affine point on the curve `C`. We use incomplete arithmetic for efficiency,
 /// so we assume these points are not zero.
@@ -295,7 +304,7 @@ impl<F: RichField + Extendable<D>, const D: usize> CircuitBuilderCurve<F, D>
         let mut bits = biguint_to_bits_target::<F, D, 2>(self, &p.y.value);
         let x_bits_low_32 = self.split_le_base::<2>(p.x.value.get_limb(0).0, 32);
 
-        let a = bits[0].target.clone();
+        let a = bits[0].target;
         let b = x_bits_low_32[0];
         // a | b = a + b - a * b
         let a_add_b = self.add(a, b);
@@ -339,7 +348,7 @@ impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F, 
     fn run_once(&self, witness: &PartitionWitness<F>, out_buffer: &mut GeneratedValues<F>) {
         let mut bits = Vec::new();
         for i in 0..256 {
-            bits.push(witness.get_bool_target(self.pv[i].clone()));
+            bits.push(witness.get_bool_target(self.pv[i]));
         }
         let mut s: [u8; 32] = [0; 32];
         for i in 0..32 {
@@ -359,11 +368,7 @@ impl<F: RichField + Extendable<D>, const D: usize, C: Curve> SimpleGenerator<F, 
         "CurvePointDecompressionGenerator".to_string()
     }
 
-    fn serialize(
-        &self,
-        _dst: &mut Vec<u8>,
-        _common_data: &CommonCircuitData<F, D>,
-    ) -> IoResult<()> {
+    fn serialize(&self, _dst: &mut Vec<u8>, _common_data: &CommonCircuitData<F, D>) -> IoResult<()> {
         todo!()
     }
 
@@ -394,18 +399,24 @@ mod tests {
     use std::ops::Neg;
 
     use anyhow::Result;
-    use plonky2::field::types::{Field, Sample};
-    use plonky2::iop::witness::PartialWitness;
-    use plonky2::plonk::circuit_builder::CircuitBuilder;
-    use plonky2::plonk::circuit_data::CircuitConfig;
-    use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
+    use plonky2::{
+        field::types::{Field, Sample},
+        iop::witness::PartialWitness,
+        plonk::{
+            circuit_builder::CircuitBuilder,
+            circuit_data::CircuitConfig,
+            config::{GenericConfig, PoseidonGoldilocksConfig},
+        },
+    };
 
-    use crate::curve::curve_types::{AffinePoint, Curve, CurveScalar};
-    use crate::curve::ed25519::Ed25519;
-    use crate::field::ed25519_base::Ed25519Base;
-    use crate::field::ed25519_scalar::Ed25519Scalar;
-    use crate::gadgets::curve::CircuitBuilderCurve;
-    use crate::gadgets::nonnative::CircuitBuilderNonNative;
+    use crate::{
+        curve::{
+            curve_types::{AffinePoint, Curve, CurveScalar},
+            ed25519::Ed25519,
+        },
+        field::{ed25519_base::Ed25519Base, ed25519_scalar::Ed25519Scalar},
+        gadgets::{curve::CircuitBuilderCurve, nonnative::CircuitBuilderNonNative},
+    };
 
     #[test]
     fn test_curve_point_is_valid() -> Result<()> {
@@ -603,8 +614,7 @@ mod tests {
         let pw = PartialWitness::new();
         let mut builder = CircuitBuilder::<F, D>::new(config);
 
-        let rando =
-            (CurveScalar(Ed25519Scalar::rand()) * Ed25519::GENERATOR_PROJECTIVE).to_affine();
+        let rando = (CurveScalar(Ed25519Scalar::rand()) * Ed25519::GENERATOR_PROJECTIVE).to_affine();
         assert!(rando.is_valid());
         let randot = builder.constant_affine_point(rando);
 
@@ -630,8 +640,7 @@ mod tests {
         let pw = PartialWitness::new();
         let mut builder = CircuitBuilder::<F, D>::new(config);
 
-        let rando =
-            (CurveScalar(Ed25519Scalar::rand()) * Ed25519::GENERATOR_PROJECTIVE).to_affine();
+        let rando = (CurveScalar(Ed25519Scalar::rand()) * Ed25519::GENERATOR_PROJECTIVE).to_affine();
         assert!(rando.is_valid());
 
         let randot = builder.constant_affine_point(rando);

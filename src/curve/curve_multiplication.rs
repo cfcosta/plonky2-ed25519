@@ -1,7 +1,6 @@
 use std::ops::Mul;
 
-use plonky2::field::types::Field;
-use plonky2::field::types::PrimeField;
+use plonky2::field::types::{Field, PrimeField};
 
 use crate::curve::curve_types::{Curve, CurveScalar, ProjectivePoint};
 
@@ -9,7 +8,7 @@ const WINDOW_BITS: usize = 4;
 const BASE: usize = 1 << WINDOW_BITS;
 
 fn digits_per_scalar<C: Curve>() -> usize {
-    (C::ScalarField::BITS + WINDOW_BITS - 1) / WINDOW_BITS
+    C::ScalarField::BITS.div_ceil(WINDOW_BITS)
 }
 
 /// Precomputed state used for scalar x ProjectivePoint multiplications,
