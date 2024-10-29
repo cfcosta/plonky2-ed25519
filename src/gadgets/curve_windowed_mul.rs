@@ -194,7 +194,8 @@ mod tests {
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
     use plonky2::util::timing::TimingTree;
-    use rand::Rng;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
 
     use crate::curve::curve_types::{Curve, CurveScalar};
     use crate::curve::ed25519::Ed25519;
@@ -203,8 +204,11 @@ mod tests {
     use crate::gadgets::curve_windowed_mul::CircuitBuilderWindowedMul;
     use crate::gadgets::nonnative::CircuitBuilderNonNative;
 
-    #[test]
-    fn test_random_access_curve_points() -> Result<()> {
+    #[proptest]
+    fn test_random_access_curve_points(
+        #[strategy(1..=32usize)] num_points: usize,
+        #[strategy(0..#num_points)] access_index: usize,
+    ) {
         const D: usize = 2;
         type C = PoseidonGoldilocksConfig;
         type F = <C as GenericConfig<D>>::F;
@@ -214,17 +218,13 @@ mod tests {
         let pw = PartialWitness::new();
         let mut builder = CircuitBuilder::<F, D>::new(config);
 
-        let num_points = 16;
         let points: Vec<_> = (0..num_points)
-            .map(|_| {
-                let g = (CurveScalar(Ed25519Scalar::rand()) * Ed25519::GENERATOR_PROJECTIVE)
-                    .to_affine();
+            .map(|i| {
+                let scalar = Ed25519Scalar::from_canonical_usize(i + 1); // Use deterministic points
+                let g = (CurveScalar(scalar) * Ed25519::GENERATOR_PROJECTIVE).to_affine();
                 builder.constant_affine_point(g)
             })
             .collect();
-
-        let mut rng = rand::thread_rng();
-        let access_index = rng.gen::<usize>() % num_points;
 
         let access_index_target = builder.constant(F::from_canonical_usize(access_index));
         let selected = builder.random_access_curve_points(access_index_target, points.clone());
@@ -234,7 +234,7 @@ mod tests {
         let data = builder.build::<C>();
         let proof = data.prove(pw).unwrap();
 
-        data.verify(proof)
+        prop_assert!(data.verify(proof).is_ok());
     }
 
     #[test]
